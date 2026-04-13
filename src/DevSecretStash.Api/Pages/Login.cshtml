@@ -1,12 +1,12 @@
 @page
 @model DevSecretStash.Api.Pages.LoginModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
 }
 
-<div class="login-container">
-    <h1>DevSecretStash</h1>
-    <p class="subtitle">Sign in to manage your secret collections</p>
+<div class="auth-container">
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to your DevSecretStash account</p>
 
     <div class="card">
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -26,4 +26,5 @@
             <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
         </form>
     </div>
+    <p class="auth-footer">Don't have an account? <a href="/Register">Sign up free</a></p>
 </div>

@@ -6,7 +6,7 @@ using DevSecretStash.Cli.Services;
 var verboseOption = new Option<bool>("--verbose", "Enable verbose output for debugging");
 verboseOption.AddAlias("-v");
 
-var rootCommand = new RootCommand("DevSecretStash - Sync .NET user secrets securely across machines");
+var rootCommand = new RootCommand("Dev Secret Stash - Sync .NET user secrets securely across machines (devsecretstash.com)");
 rootCommand.AddGlobalOption(verboseOption);
 
 rootCommand.AddCommand(ConfigCommand.Create());

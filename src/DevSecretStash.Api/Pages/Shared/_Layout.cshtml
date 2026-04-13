@@ -3,27 +3,62 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DevSecretStash</title>
+    <title>@ViewData["Title"] - Dev Secret Stash</title>
     <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
     <nav class="navbar">
-        <div class="container">
-            <a class="brand" href="/">DevSecretStash</a>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <div class="nav-right">
+        <div class="container nav-container">
+            <a class="brand" href="/">
+                <span class="brand-icon">&#x1f512;</span> Dev Secret Stash
+            </a>
+            <div class="nav-right">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Dashboard" class="nav-link">Dashboard</a>
                     <span class="nav-user">@User.FindFirst("email")?.Value</span>
                     <a href="/Logout" class="nav-link">Logout</a>
-                </div>
-            }
+                }
+                else
+                {
+                    <a href="/Docs" class="nav-link">Docs</a>
+                    <a href="/Login" class="nav-link">Login</a>
+                    <a href="/Register" class="btn btn-primary btn-sm">Sign Up Free</a>
+                }
+            </div>
+            <button class="mobile-toggle" onclick="document.querySelector('.nav-right').classList.toggle('open')">
+                &#9776;
+            </button>
         </div>
     </nav>
-    <main class="container">
+    <main>
         @RenderBody()
     </main>
-    <footer class="container footer">
-        <p>DevSecretStash &mdash; Secure .NET User Secrets Sync</p>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">Dev Secret Stash</div>
+                    <p class="footer-desc">Securely sync your .NET user-secrets across every machine you develop on.</p>
+                    <p class="footer-desc" style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.6;">by Extrastrength Software LLC</p>
+                </div>
+                <div>
+                    <div class="footer-heading">Product</div>
+                    <a href="/Docs">Documentation</a>
+                    <a href="/swagger">API Reference</a>
+                    <a href="/Register">Create Account</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Resources</div>
+                    <a href="/Docs#install">Install CLI</a>
+                    <a href="/Docs#security">Security Model</a>
+                    <a href="/Docs#deploy">Self-Host</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Extrastrength Software LLC. Free and open source.</p>
+            </div>
+        </div>
     </footer>
 </body>
 </html>

@@ -1,0 +1,133 @@
+@page
+@model DevSecretStash.Api.Pages.DocsModel
+@{
+    ViewData["Title"] = "Documentation";
+}
+
+<div class="container docs">
+    <h1>Documentation</h1>
+    <p class="lead">Everything you need to install, configure, and use DevSecretStash.</p>
+
+    <h2 id="install">Install the CLI</h2>
+    <p>DevSecretStash is distributed as a .NET global tool. You need the <a href="https://dotnet.microsoft.com/download">.NET SDK 9.0+</a> installed.</p>
+    <pre><code>dotnet tool install --global DevSecretStash</code></pre>
+    <p>Verify the installation:</p>
+    <pre><code>dss --help</code></pre>
+    <p>To update to the latest version:</p>
+    <pre><code>dotnet tool update --global DevSecretStash</code></pre>
+
+    <h2 id="quickstart">Quick Start</h2>
+    <h3>1. Create an account</h3>
+    <p>Register via the CLI (encryption keys are generated locally on your machine):</p>
+    <pre><code>dss register</code></pre>
+    <p>Or <a href="/Register">create an account on the website</a> and then log in via the CLI:</p>
+    <pre><code>dss login</code></pre>
+
+    <h3>2. Push secrets</h3>
+    <p>From a .NET project directory that has a <code>UserSecretsId</code> in its <code>.csproj</code>:</p>
+    <pre><code>dss push</code></pre>
+    <p>Or specify the ID explicitly:</p>
+    <pre><code>dss push my-project-secrets-id</code></pre>
+
+    <h3>3. Pull on another machine</h3>
+    <pre><code>dss login
+dss pull</code></pre>
+
+    <h2 id="commands">CLI Commands</h2>
+    <table class="docs-table">
+        <thead>
+            <tr><th>Command</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>dss config --server-url &lt;url&gt;</code></td><td>Set or view the server URL</td></tr>
+            <tr><td><code>dss register</code></td><td>Create a new account (generates encryption keys locally)</td></tr>
+            <tr><td><code>dss login</code></td><td>Authenticate and cache credentials locally</td></tr>
+            <tr><td><code>dss logout</code></td><td>Clear cached credentials from this machine</td></tr>
+            <tr><td><code>dss push [id]</code></td><td>Encrypt and upload local secrets</td></tr>
+            <tr><td><code>dss pull [id]</code></td><td>Download and decrypt secrets to local machine</td></tr>
+            <tr><td><code>dss status [id]</code></td><td>Compare local vs remote sync status</td></tr>
+            <tr><td><code>dss list</code></td><td>List all secret collections stored on the server</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Global options:</strong> <code>--verbose</code> / <code>-v</code> enables detailed HTTP request/response logging.</p>
+    <p>If <code>[id]</code> is omitted, the CLI auto-detects <code>UserSecretsId</code> from a <code>.csproj</code> in the current directory.</p>
+
+    <h2 id="security">Security Model</h2>
+    <p>DevSecretStash uses a two-layer encryption scheme. Your plaintext secrets never leave your machine.</p>
+
+    <h3>Encryption flow</h3>
+    <pre><code>Your password
+  |  Argon2id (64MB memory, 3 iterations)
+  v
+Key-Encryption-Key (KEK) -- never sent to server
+  |  AES-256-GCM
+  v
+Wraps your Master Encryption Key (MEK) -- server stores wrapped version only
+  |
+  v
+MEK encrypts all your secrets via AES-256-GCM</code></pre>
+
+    <table class="docs-table">
+        <thead>
+            <tr><th>Layer</th><th>Mechanism</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Authentication</td><td>Argon2id (server-side)</td><td>Verify your identity</td></tr>
+            <tr><td>Key wrapping</td><td>Argon2id (client) + AES-256-GCM</td><td>Protect master key with password</td></tr>
+            <tr><td>Secret encryption</td><td>AES-256-GCM</td><td>Encrypt secrets before upload</td></tr>
+            <tr><td>Transport</td><td>HTTPS + HSTS</td><td>Protect data in transit</td></tr>
+            <tr><td>Local storage</td><td>chmod 600 (Linux/Mac)</td><td>Protect cached keys on disk</td></tr>
+            <tr><td>API auth</td><td>JWT (15m) + refresh tokens (30d)</td><td>Stateless auth with rotation</td></tr>
+            <tr><td>Rate limiting</td><td>10 attempts / 15 min</td><td>Prevent brute force</td></tr>
+        </tbody>
+    </table>
+
+    <h3>What a server compromise reveals</h3>
+    <p>An attacker with full database access gets: your email, a password hash (Argon2id), an encrypted master key, and encrypted secret blobs. They would need to brute-force your password through Argon2id to decrypt anything.</p>
+
+    <h2 id="api">API Reference</h2>
+    <p>The full REST API is documented via Swagger at <a href="/swagger">/swagger</a>.</p>
+
+    <table class="docs-table">
+        <thead>
+            <tr><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>POST /api/auth/register</code></td><td>No</td><td>Create account</td></tr>
+            <tr><td><code>POST /api/auth/login</code></td><td>No</td><td>Authenticate, get JWT + encrypted master key</td></tr>
+            <tr><td><code>POST /api/auth/refresh</code></td><td>No</td><td>Rotate refresh token</td></tr>
+            <tr><td><code>POST /api/auth/change-password</code></td><td>JWT</td><td>Update password + re-wrapped master key</td></tr>
+            <tr><td><code>GET /api/secrets</code></td><td>JWT</td><td>List all collections</td></tr>
+            <tr><td><code>GET /api/secrets/{id}</code></td><td>JWT</td><td>Get encrypted collection</td></tr>
+            <tr><td><code>PUT /api/secrets/{id}</code></td><td>JWT</td><td>Push encrypted collection</td></tr>
+            <tr><td><code>DELETE /api/secrets/{id}</code></td><td>JWT</td><td>Delete collection</td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="deploy">Self-Hosting</h2>
+    <p>You can self-host DevSecretStash instead of using <code>devsecretstash.com</code>.</p>
+
+    <h3>Docker</h3>
+    <pre><code>docker build -t devsecretstash-api -f src/DevSecretStash.Api/Dockerfile .
+docker run -d -p 8080:8080 \
+  -v dss-data:/app/data \
+  -e Jwt__Key="your-secret-key-minimum-32-characters!" \
+  devsecretstash-api</code></pre>
+
+    <h3>Point CLI at your server</h3>
+    <pre><code>dss config --server-url https://your-server.example.com</code></pre>
+
+    <h3>Configuration</h3>
+    <table class="docs-table">
+        <thead>
+            <tr><th>Setting</th><th>Environment Variable</th><th>Default</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Database</td><td><code>ConnectionStrings__Default</code></td><td><code>Data Source=devsecretstash.db</code></td></tr>
+            <tr><td>JWT Key</td><td><code>Jwt__Key</code></td><td><em>Change in production!</em></td></tr>
+            <tr><td>JWT Issuer</td><td><code>Jwt__Issuer</code></td><td><code>DevSecretStash</code></td></tr>
+            <tr><td>Token lifetime</td><td><code>Jwt__AccessTokenMinutes</code></td><td><code>15</code></td></tr>
+            <tr><td>Refresh lifetime</td><td><code>Jwt__RefreshTokenDays</code></td><td><code>30</code></td></tr>
+        </tbody>
+    </table>
+</div>

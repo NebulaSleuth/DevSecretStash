@@ -5,7 +5,7 @@ namespace DevSecretStash.Cli.Services;
 public class ConfigStore
 {
     private static readonly string ConfigDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dss");
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".devsecretstash");
     private static readonly string ConfigPath = Path.Combine(ConfigDir, "config.json");
 
     public virtual DevSecretStashConfig Load()
@@ -27,5 +27,5 @@ public class ConfigStore
 
 public class DevSecretStashConfig
 {
-    public string ServerUrl { get; set; } = "https://localhost:5001";
+    public string ServerUrl { get; set; } = "https://devsecretstash.com";
 }

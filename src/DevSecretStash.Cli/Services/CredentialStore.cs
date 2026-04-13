@@ -6,7 +6,7 @@ namespace DevSecretStash.Cli.Services;
 public class CredentialStore
 {
     private static readonly string ConfigDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dss");
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".devsecretstash");
     private static readonly string CredPath = Path.Combine(ConfigDir, "credentials.json");
 
     public virtual StoredCredentials? Load()
