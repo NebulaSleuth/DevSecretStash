@@ -9,7 +9,7 @@ public class CredentialStore
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".devsecrets");
     private static readonly string CredPath = Path.Combine(ConfigDir, "credentials.json");
 
-    public StoredCredentials? Load()
+    public virtual StoredCredentials? Load()
     {
         if (!File.Exists(CredPath))
             return null;
@@ -18,7 +18,7 @@ public class CredentialStore
         return JsonSerializer.Deserialize<StoredCredentials>(json);
     }
 
-    public void Save(StoredCredentials credentials)
+    public virtual void Save(StoredCredentials credentials)
     {
         Directory.CreateDirectory(ConfigDir);
         var json = JsonSerializer.Serialize(credentials, new JsonSerializerOptions { WriteIndented = true });
@@ -26,19 +26,19 @@ public class CredentialStore
         SetSecurePermissions();
     }
 
-    public void Clear()
+    public virtual void Clear()
     {
         if (File.Exists(CredPath))
             File.Delete(CredPath);
     }
 
-    public bool IsLoggedIn()
+    public virtual bool IsLoggedIn()
     {
         var creds = Load();
         return creds != null;
     }
 
-    public byte[]? GetMasterKey()
+    public virtual byte[]? GetMasterKey()
     {
         var creds = Load();
         return creds?.MasterKeyBase64 != null ? Convert.FromBase64String(creds.MasterKeyBase64) : null;

@@ -31,63 +31,88 @@ public class ApiClient
         }
 
         _http.BaseAddress = new Uri(_configStore.Load().ServerUrl);
+        VerboseOutput.Log($"Server URL: {_http.BaseAddress}");
     }
+
+    private static void Log(string message) => VerboseOutput.Log(message);
 
     public async Task<AuthResponse?> Register(RegisterRequest request)
     {
+        Log("POST /api/auth/register");
         var response = await _http.PostAsJsonAsync("/api/auth/register", request);
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         if (response.StatusCode == HttpStatusCode.Conflict)
             throw new ApiException("Email already registered.");
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
     }
 
     public async Task<AuthResponse?> Login(LoginRequest request)
     {
+        Log("POST /api/auth/login");
         var response = await _http.PostAsJsonAsync("/api/auth/login", request);
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         if (response.StatusCode == HttpStatusCode.Unauthorized)
             throw new ApiException("Invalid email or password.");
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
     }
 
     public async Task<List<SecretCollectionSummary>> ListCollections()
     {
         await EnsureAuthenticated();
+        Log("GET /api/secrets");
         var response = await _http.GetAsync("/api/secrets");
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         await HandleAuthFailure(response);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<List<SecretCollectionSummary>>(JsonOptions) ?? [];
     }
 
     public async Task<PullSecretsResponse?> PullSecrets(string userSecretsId)
     {
         await EnsureAuthenticated();
+        Log($"GET /api/secrets/{userSecretsId}");
         var response = await _http.GetAsync($"/api/secrets/{Uri.EscapeDataString(userSecretsId)}");
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;
         await HandleAuthFailure(response);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<PullSecretsResponse>(JsonOptions);
     }
 
     public async Task<PushSecretsResponse?> PushSecrets(string userSecretsId, PushSecretsRequest request)
     {
         await EnsureAuthenticated();
+        Log($"PUT /api/secrets/{userSecretsId}");
         var response = await _http.PutAsJsonAsync($"/api/secrets/{Uri.EscapeDataString(userSecretsId)}", request);
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         if (response.StatusCode == HttpStatusCode.Conflict)
             throw new ApiException("Version conflict. Remote was modified since last pull.");
         await HandleAuthFailure(response);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
         return await response.Content.ReadFromJsonAsync<PushSecretsResponse>(JsonOptions);
     }
 
     public async Task DeleteSecrets(string userSecretsId)
     {
         await EnsureAuthenticated();
+        Log($"DELETE /api/secrets/{userSecretsId}");
         var response = await _http.DeleteAsync($"/api/secrets/{Uri.EscapeDataString(userSecretsId)}");
+        Log($"Response: {(int)response.StatusCode} {response.StatusCode}");
         await HandleAuthFailure(response);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccess(response);
+    }
+
+    private async Task EnsureSuccess(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            Log($"Error response body: {body}");
+            throw new ApiException($"Server error ({(int)response.StatusCode}): {body}");
+        }
     }
 
     private async Task EnsureAuthenticated()

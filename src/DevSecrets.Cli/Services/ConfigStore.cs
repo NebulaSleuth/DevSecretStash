@@ -8,7 +8,7 @@ public class ConfigStore
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".devsecrets");
     private static readonly string ConfigPath = Path.Combine(ConfigDir, "config.json");
 
-    public DevSecretsConfig Load()
+    public virtual DevSecretsConfig Load()
     {
         if (!File.Exists(ConfigPath))
             return new DevSecretsConfig();
@@ -17,7 +17,7 @@ public class ConfigStore
         return JsonSerializer.Deserialize<DevSecretsConfig>(json) ?? new DevSecretsConfig();
     }
 
-    public void Save(DevSecretsConfig config)
+    public virtual void Save(DevSecretsConfig config)
     {
         Directory.CreateDirectory(ConfigDir);
         var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
