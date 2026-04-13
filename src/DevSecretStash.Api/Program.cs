@@ -81,7 +81,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Auto-migrate
+// Ensure data directory exists for SQLite, then auto-migrate
+var connString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=devsecretstash.db";
+var dbPath = connString.Replace("Data Source=", "").Trim();
+var dbDir = Path.GetDirectoryName(dbPath);
+if (!string.IsNullOrEmpty(dbDir))
+    Directory.CreateDirectory(dbDir);
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -95,7 +101,10 @@ app.UseSwaggerUI();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
-    app.UseHttpsRedirection();
+    // HTTPS redirect handled by Azure App Service / load balancer
+    // Only enable if running outside Azure with direct HTTPS termination
+    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME")))
+        app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
