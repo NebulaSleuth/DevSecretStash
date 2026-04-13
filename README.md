@@ -69,17 +69,45 @@ dotnet user-secrets list   # same secrets appear
 </PropertyGroup>
 ```
 
-### "Global" secrets (no .csproj required)
+### Managing secrets directly with dss (no dotnet user-secrets needed)
 
-With `dss`, you can push/pull any arbitrary ID -- you don't need a `.csproj` at all:
+The `dss secrets` commands let you create and manage secret collections without `dotnet user-secrets` or a `.csproj` file:
 
 ```bash
-# Create a "global" secrets collection
-dss push global-dev-secrets
-dss pull global-dev-secrets
+# Create a new collection
+dss secrets init my-app-secrets
+
+# Add secrets
+dss secrets set my-app-secrets "ConnectionStrings:Default" "Server=mydb;Password=s3cret"
+dss secrets set my-app-secrets "ApiKey" "sk_live_abc123"
+
+# View secrets
+dss secrets list my-app-secrets
+
+# Remove a secret
+dss secrets remove my-app-secrets "ApiKey"
+
+# Clear all secrets
+dss secrets clear my-app-secrets
+
+# Link a .csproj to use this collection
+dss secrets link my-app-secrets
+dss secrets link my-app-secrets --project ./src/MyApp/MyApp.csproj
+
+# Sync to all your machines
+dss push my-app-secrets
 ```
 
-The secrets land in `~/.microsoft/usersecrets/global-dev-secrets/secrets.json`. Any project with `<UserSecretsId>global-dev-secrets</UserSecretsId>` will read them automatically.
+### Secrets management commands
+
+| Command | Description |
+|---------|-------------|
+| `dss secrets init <id>` | Create a new empty secrets collection |
+| `dss secrets set <id> <key> <value>` | Set a secret (creates collection if needed) |
+| `dss secrets remove <id> <key>` | Remove a secret |
+| `dss secrets list [id]` | List all secrets (auto-detects from .csproj if omitted) |
+| `dss secrets clear <id>` | Remove all secrets from a collection |
+| `dss secrets link <id> [-p project]` | Set a .csproj's UserSecretsId to this collection |
 
 ### Where secrets are stored locally
 

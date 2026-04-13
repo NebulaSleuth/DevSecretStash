@@ -17,6 +17,7 @@ rootCommand.AddCommand(PushCommand.Create());
 rootCommand.AddCommand(PullCommand.Create());
 rootCommand.AddCommand(StatusCommand.Create());
 rootCommand.AddCommand(ListCommand.Create());
+rootCommand.AddCommand(SecretsCommand.Create());
 
 // Set verbose flag before any command runs
 rootCommand.AddValidator(result =>

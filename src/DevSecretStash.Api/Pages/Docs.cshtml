@@ -72,12 +72,45 @@ dss push</code></pre>
   &lt;UserSecretsId&gt;my-shared-secrets&lt;/UserSecretsId&gt;
 &lt;/PropertyGroup&gt;</code></pre>
 
-    <h3>"Global" secrets (no .csproj required)</h3>
-    <p>With <code>dss</code>, you can push/pull any arbitrary ID — you don't need a <code>.csproj</code> at all:</p>
-    <pre><code># Create a "global" secrets collection
-dss push global-dev-secrets
-dss pull global-dev-secrets</code></pre>
-    <p>The secrets land in <code>~/.microsoft/usersecrets/global-dev-secrets/secrets.json</code>. Any project with <code>&lt;UserSecretsId&gt;global-dev-secrets&lt;/UserSecretsId&gt;</code> will read them automatically.</p>
+    <h3>Managing secrets directly with dss</h3>
+    <p>The <code>dss secrets</code> commands let you create and manage secret collections without <code>dotnet user-secrets</code> or a <code>.csproj</code> file:</p>
+    <pre><code># Create a new collection
+dss secrets init my-app-secrets
+
+# Add secrets
+dss secrets set my-app-secrets "ConnectionStrings:Default" "Server=mydb;Password=s3cret"
+dss secrets set my-app-secrets "ApiKey" "sk_live_abc123"
+
+# View secrets
+dss secrets list my-app-secrets
+
+# Remove a secret
+dss secrets remove my-app-secrets "ApiKey"
+
+# Clear all secrets
+dss secrets clear my-app-secrets
+
+# Link a .csproj to use this collection
+dss secrets link my-app-secrets
+dss secrets link my-app-secrets --project ./src/MyApp/MyApp.csproj
+
+# Sync to all your machines
+dss push my-app-secrets</code></pre>
+
+    <h3>Secrets management commands</h3>
+    <table class="docs-table">
+        <thead>
+            <tr><th>Command</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>dss secrets init &lt;id&gt;</code></td><td>Create a new empty secrets collection</td></tr>
+            <tr><td><code>dss secrets set &lt;id&gt; &lt;key&gt; &lt;value&gt;</code></td><td>Set a secret (creates collection if needed)</td></tr>
+            <tr><td><code>dss secrets remove &lt;id&gt; &lt;key&gt;</code></td><td>Remove a secret</td></tr>
+            <tr><td><code>dss secrets list [id]</code></td><td>List all secrets (auto-detects from .csproj if omitted)</td></tr>
+            <tr><td><code>dss secrets clear &lt;id&gt;</code></td><td>Remove all secrets from a collection</td></tr>
+            <tr><td><code>dss secrets link &lt;id&gt; [-p project]</code></td><td>Set a .csproj's UserSecretsId to this collection</td></tr>
+        </tbody>
+    </table>
 
     <h3>Where secrets are stored locally</h3>
     <table class="docs-table">
