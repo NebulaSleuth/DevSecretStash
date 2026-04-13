@@ -11,6 +11,12 @@
     <h2 id="install">Install the CLI</h2>
     <p>DevSecretStash is distributed as a .NET global tool. You need the <a href="https://dotnet.microsoft.com/download">.NET SDK 9.0+</a> installed.</p>
     <pre><code>dotnet tool install --global DevSecretStash</code></pre>
+    <p>If <code>dss</code> is not found after install, add the dotnet tools directory to your PATH:</p>
+    <pre><code># Linux / macOS — add to ~/.bashrc or ~/.zshrc for persistence
+export PATH="$PATH:$HOME/.dotnet/tools"
+
+# Windows PowerShell — usually added automatically, but if not:
+$env:PATH += ";$env:USERPROFILE\.dotnet\tools"</code></pre>
     <p>Verify the installation:</p>
     <pre><code>dss --help</code></pre>
     <p>To update to the latest version:</p>

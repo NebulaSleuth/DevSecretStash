@@ -12,6 +12,10 @@ Hosted free at **[devsecretstash.com](https://devsecretstash.com)** -- or self-h
 # Install the CLI
 dotnet tool install --global DevSecretStash
 
+# Ensure dotnet tools are on your PATH (if 'dss' is not found)
+# Add to your shell profile (~/.bashrc, ~/.zshrc, or ~/.profile) for persistence:
+export PATH="$PATH:$HOME/.dotnet/tools"
+
 # Create your free account
 dss register
 
