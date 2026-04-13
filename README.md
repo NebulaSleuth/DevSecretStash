@@ -1,13 +1,13 @@
-# DevSecrets
+# DevSecretStash
 
 Securely sync .NET user-secrets across machines with end-to-end encryption.
 
-DevSecrets consists of a **CLI tool** (dotnet global tool) and a **web service** (ASP.NET Core). Secrets are encrypted on your machine before upload — the server never sees plaintext.
+DevSecretStash consists of a **CLI tool** (dotnet global tool) and a **web service** (ASP.NET Core). Secrets are encrypted on your machine before upload — the server never sees plaintext.
 
 ## How It Works
 
 ```
-[Your Machine]                    [DevSecrets Server]                [Another Machine]
+[Your Machine]                    [DevSecretStash Server]                [Another Machine]
 secrets.json  -->  encrypt  -->  encrypted blob (SQLite)  -->  decrypt  -->  secrets.json
                    (AES-256-GCM)                                (AES-256-GCM)
 ```
@@ -23,16 +23,16 @@ secrets.json  -->  encrypt  -->  encrypted blob (SQLite)  -->  decrypt  -->  sec
 
 **Option A: Docker**
 ```bash
-docker build -t devsecrets-api -f src/DevSecrets.Api/Dockerfile .
+docker build -t dss-api -f src/DevSecretStash.Api/Dockerfile .
 docker run -d -p 8080:8080 \
-  -v devsecrets-data:/app/data \
+  -v dss-data:/app/data \
   -e Jwt__Key="your-production-secret-key-minimum-32-characters!" \
-  devsecrets-api
+  dss-api
 ```
 
 **Option B: Run directly**
 ```bash
-cd src/DevSecrets.Api
+cd src/DevSecretStash.Api
 dotnet run
 # Server starts at https://localhost:5001 (dev) or http://localhost:5000
 ```
@@ -47,19 +47,19 @@ The server provides:
 **Option A: From local build**
 ```bash
 # Pack the tool
-dotnet pack src/DevSecrets.Cli/DevSecrets.Cli.csproj -c Release -o ./nupkg
+dotnet pack src/DevSecretStash.Cli/DevSecretStash.Cli.csproj -c Release -o ./nupkg
 
 # Install globally from the local package
-dotnet tool install --global --add-source ./nupkg DevSecrets
+dotnet tool install --global --add-source ./nupkg DevSecretStash
 ```
 
 **Option B: From a NuGet feed**
 ```bash
 # If published to NuGet.org:
-dotnet tool install --global DevSecrets
+dotnet tool install --global DevSecretStash
 
 # If published to a private feed:
-dotnet tool install --global DevSecrets --add-source https://your-feed-url/v3/index.json
+dotnet tool install --global DevSecretStash --add-source https://your-feed-url/v3/index.json
 ```
 
 **Option C: From GitHub Packages**
@@ -67,39 +67,39 @@ dotnet tool install --global DevSecrets --add-source https://your-feed-url/v3/in
 dotnet nuget add source https://nuget.pkg.github.com/YOUR_ORG/index.json \
   --name github --username YOUR_USERNAME --password YOUR_PAT
 
-dotnet tool install --global DevSecrets --add-source github
+dotnet tool install --global DevSecretStash --add-source github
 ```
 
 ### 3. Configure and Use
 
 ```bash
 # Point CLI at your server
-devsecrets config --server-url https://your-server.example.com
+dss config --server-url https://your-server.example.com
 
 # Create an account
-devsecrets register
+dss register
 
 # Push secrets from a .NET project directory (auto-detects UserSecretsId from .csproj)
 cd /path/to/your/dotnet/project
-devsecrets push
+dss push
 
 # On another machine: install CLI, login, pull
-devsecrets login
-devsecrets pull
+dss login
+dss pull
 ```
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `devsecrets config --server-url <url>` | Set the server URL |
-| `devsecrets register` | Create a new account |
-| `devsecrets login` | Authenticate and cache credentials |
-| `devsecrets logout` | Clear cached credentials |
-| `devsecrets push [UserSecretsId]` | Encrypt and upload local secrets |
-| `devsecrets pull [UserSecretsId]` | Download and decrypt secrets locally |
-| `devsecrets status [UserSecretsId]` | Show sync status (local vs remote) |
-| `devsecrets list` | List all secret collections on the server |
+| `dss config --server-url <url>` | Set the server URL |
+| `dss register` | Create a new account |
+| `dss login` | Authenticate and cache credentials |
+| `dss logout` | Clear cached credentials |
+| `dss push [UserSecretsId]` | Encrypt and upload local secrets |
+| `dss pull [UserSecretsId]` | Download and decrypt secrets locally |
+| `dss status [UserSecretsId]` | Show sync status (local vs remote) |
+| `dss list` | List all secret collections on the server |
 
 **Global options:**
 - `--verbose` / `-v` — Enable verbose output (shows HTTP requests/responses)
@@ -108,7 +108,7 @@ If `UserSecretsId` is omitted, the CLI scans the current directory for a `.cspro
 
 ## Web Dashboard
 
-The server includes a browser-based dashboard at the root URL (`/`). Login with your DevSecrets account to:
+The server includes a browser-based dashboard at the root URL (`/`). Login with your DevSecretStash account to:
 
 - View all your synced secret collections
 - See version numbers and last-modified timestamps
@@ -117,15 +117,15 @@ The server includes a browser-based dashboard at the root URL (`/`). Login with 
 ## Project Structure
 
 ```
-DevSecrets/
+DevSecretStash/
   src/
-    DevSecrets.Core/       # Shared: encryption (AES-256-GCM, Argon2id), models, DTOs
-    DevSecrets.Api/        # ASP.NET Core server: REST API + Razor Pages dashboard
-    DevSecrets.Cli/        # dotnet global tool: CLI commands
+    DevSecretStash.Core/       # Shared: encryption (AES-256-GCM, Argon2id), models, DTOs
+    DevSecretStash.Api/        # ASP.NET Core server: REST API + Razor Pages dashboard
+    DevSecretStash.Cli/        # dotnet global tool: CLI commands
   tests/
-    DevSecrets.Core.Tests/ # 25 unit tests (encryption, key management)
-    DevSecrets.Api.Tests/  # 26 integration tests (auth, CRUD, user isolation)
-    DevSecrets.Cli.Tests/  # 9 integration tests (full workflows)
+    DevSecretStash.Core.Tests/ # 25 unit tests (encryption, key management)
+    DevSecretStash.Api.Tests/  # 26 integration tests (auth, CRUD, user isolation)
+    DevSecretStash.Cli.Tests/  # 9 integration tests (full workflows)
 ```
 
 ## Server Configuration
@@ -134,36 +134,36 @@ Configuration via `appsettings.json` or environment variables:
 
 | Setting | Env Variable | Default | Description |
 |---------|-------------|---------|-------------|
-| `ConnectionStrings:Default` | `ConnectionStrings__Default` | `Data Source=devsecrets.db` | SQLite connection string |
+| `ConnectionStrings:Default` | `ConnectionStrings__Default` | `Data Source=dss.db` | SQLite connection string |
 | `Jwt:Key` | `Jwt__Key` | *(dev key)* | **Change in production!** Min 32 chars |
-| `Jwt:Issuer` | `Jwt__Issuer` | `DevSecrets` | JWT issuer/audience |
+| `Jwt:Issuer` | `Jwt__Issuer` | `DevSecretStash` | JWT issuer/audience |
 | `Jwt:AccessTokenMinutes` | `Jwt__AccessTokenMinutes` | `15` | Access token lifetime |
 | `Jwt:RefreshTokenDays` | `Jwt__RefreshTokenDays` | `30` | Refresh token lifetime |
 
 ## Publishing the CLI to NuGet.org
 
-To make the CLI installable anywhere via `dotnet tool install --global DevSecrets`:
+To make the CLI installable anywhere via `dotnet tool install --global DevSecretStash`:
 
 ```bash
 # 1. Pack
-dotnet pack src/DevSecrets.Cli/DevSecrets.Cli.csproj -c Release -o ./nupkg
+dotnet pack src/DevSecretStash.Cli/DevSecretStash.Cli.csproj -c Release -o ./nupkg
 
 # 2. Get a NuGet.org API key from https://www.nuget.org/account/apikeys
 
 # 3. Push
-dotnet nuget push ./nupkg/DevSecrets.0.1.0.nupkg \
+dotnet nuget push ./nupkg/DevSecretStash.0.1.0.nupkg \
   --api-key YOUR_NUGET_API_KEY \
   --source https://api.nuget.org/v3/index.json
 ```
 
 Once published, anyone can install it:
 ```bash
-dotnet tool install --global DevSecrets
+dotnet tool install --global DevSecretStash
 ```
 
 To update:
 ```bash
-dotnet tool update --global DevSecrets
+dotnet tool update --global DevSecretStash
 ```
 
 ## Private NuGet Feed (Alternative)
@@ -172,14 +172,14 @@ If you don't want to publish publicly, host a private feed:
 
 **GitHub Packages:**
 ```bash
-dotnet nuget push ./nupkg/DevSecrets.0.1.0.nupkg \
+dotnet nuget push ./nupkg/DevSecretStash.0.1.0.nupkg \
   --api-key YOUR_GITHUB_PAT \
   --source https://nuget.pkg.github.com/YOUR_ORG/index.json
 ```
 
 **Azure Artifacts:**
 ```bash
-dotnet nuget push ./nupkg/DevSecrets.0.1.0.nupkg \
+dotnet nuget push ./nupkg/DevSecretStash.0.1.0.nupkg \
   --api-key az \
   --source https://pkgs.dev.azure.com/YOUR_ORG/_packaging/YOUR_FEED/nuget/v3/index.json
 ```
@@ -187,7 +187,7 @@ dotnet nuget push ./nupkg/DevSecrets.0.1.0.nupkg \
 **Self-hosted (BaGet):**
 ```bash
 docker run -d -p 5555:80 loic-sharma/baget
-dotnet nuget push ./nupkg/DevSecrets.0.1.0.nupkg \
+dotnet nuget push ./nupkg/DevSecretStash.0.1.0.nupkg \
   --source http://localhost:5555/v3/index.json
 ```
 
@@ -215,10 +215,10 @@ dotnet build
 dotnet test
 
 # Run the API in development mode
-dotnet run --project src/DevSecrets.Api
+dotnet run --project src/DevSecretStash.Api
 
 # Run the CLI
-dotnet run --project src/DevSecrets.Cli -- --help
+dotnet run --project src/DevSecretStash.Cli -- --help
 ```
 
 ## License

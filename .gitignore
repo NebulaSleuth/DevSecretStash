@@ -35,5 +35,5 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
-devsecrets.db
+devsecretstash.db
 appsettings.*.local.json

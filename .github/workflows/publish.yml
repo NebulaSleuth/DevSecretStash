@@ -22,7 +22,7 @@ jobs:
         run: dotnet test -c Release --no-build
 
       - name: Pack CLI Tool
-        run: dotnet pack src/DevSecrets.Cli/DevSecrets.Cli.csproj -c Release -o ./nupkg --no-build
+        run: dotnet pack src/DevSecretStash.Cli/DevSecretStash.Cli.csproj -c Release -o ./nupkg --no-build
 
       - name: Push to NuGet.org
         env:
