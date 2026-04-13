@@ -29,6 +29,65 @@ dss pull
 
 That's it. Your secrets are encrypted on your machine before upload. The server never sees plaintext.
 
+## Working with .NET User Secrets
+
+DevSecretStash syncs the secrets managed by `dotnet user-secrets`. Here's how to use them together.
+
+### Setting up secrets for a project
+
+```bash
+# Initialize secrets for your project (adds UserSecretsId to .csproj)
+cd /path/to/your/project
+dotnet user-secrets init
+
+# Add secrets
+dotnet user-secrets set "ConnectionStrings:Default" "Server=mydb;Password=secret123"
+dotnet user-secrets set "ApiKey" "sk_live_abc123"
+dotnet user-secrets set "Smtp:Password" "email-pw"
+
+# View your secrets
+dotnet user-secrets list
+
+# Sync to all your machines
+dss push
+```
+
+On another machine:
+```bash
+dss pull
+dotnet user-secrets list   # same secrets appear
+```
+
+### Sharing secrets across projects
+
+`dotnet user-secrets` is project-specific -- each collection is tied to a `UserSecretsId` in the `.csproj`. But you can reuse the same ID across multiple projects to share secrets:
+
+```xml
+<!-- In each .csproj that should share secrets -->
+<PropertyGroup>
+  <UserSecretsId>my-shared-secrets</UserSecretsId>
+</PropertyGroup>
+```
+
+### "Global" secrets (no .csproj required)
+
+With `dss`, you can push/pull any arbitrary ID -- you don't need a `.csproj` at all:
+
+```bash
+# Create a "global" secrets collection
+dss push global-dev-secrets
+dss pull global-dev-secrets
+```
+
+The secrets land in `~/.microsoft/usersecrets/global-dev-secrets/secrets.json`. Any project with `<UserSecretsId>global-dev-secrets</UserSecretsId>` will read them automatically.
+
+### Where secrets are stored locally
+
+| Platform | Path |
+|----------|------|
+| Windows | `%APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json` |
+| Linux/macOS | `~/.microsoft/usersecrets/<UserSecretsId>/secrets.json` |
+
 ## How It Works
 
 ```

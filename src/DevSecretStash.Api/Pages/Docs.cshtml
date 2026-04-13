@@ -6,7 +6,7 @@
 
 <div class="container docs">
     <h1>Documentation</h1>
-    <p class="lead">Everything you need to install, configure, and use DevSecretStash.</p>
+    <p class="lead">Everything you need to install, configure, and use Dev Secret Stash.</p>
 
     <h2 id="install">Install the CLI</h2>
     <p>DevSecretStash is distributed as a .NET global tool. You need the <a href="https://dotnet.microsoft.com/download">.NET SDK 9.0+</a> installed.</p>
@@ -29,15 +29,77 @@ $env:PATH += ";$env:USERPROFILE\.dotnet\tools"</code></pre>
     <p>Or <a href="/Register">create an account on the website</a> and then log in via the CLI:</p>
     <pre><code>dss login</code></pre>
 
-    <h3>2. Push secrets</h3>
+    <h3>2. Set up secrets for your project</h3>
+    <p>If your project doesn't have user secrets initialized yet:</p>
+    <pre><code># Initialize secrets (adds UserSecretsId to .csproj)
+cd /path/to/your/project
+dotnet user-secrets init
+
+# Add secrets
+dotnet user-secrets set "ConnectionStrings:Default" "Server=mydb;Password=secret123"
+dotnet user-secrets set "ApiKey" "sk_live_abc123"
+dotnet user-secrets set "Smtp:Password" "email-pw"
+
+# View your secrets
+dotnet user-secrets list</code></pre>
+
+    <h3>3. Push secrets</h3>
     <p>From a .NET project directory that has a <code>UserSecretsId</code> in its <code>.csproj</code>:</p>
     <pre><code>dss push</code></pre>
     <p>Or specify the ID explicitly:</p>
     <pre><code>dss push my-project-secrets-id</code></pre>
 
-    <h3>3. Pull on another machine</h3>
+    <h3>4. Pull on another machine</h3>
     <pre><code>dss login
 dss pull</code></pre>
+    <p>That's it. Your secrets are now synced. Run <code>dotnet user-secrets list</code> to confirm.</p>
+
+    <h2 id="user-secrets">Working with .NET User Secrets</h2>
+    <p>DevSecretStash syncs the secrets managed by <code>dotnet user-secrets</code>. Here's how they work together.</p>
+
+    <h3>Setting individual secrets</h3>
+    <pre><code>dotnet user-secrets set "ConnectionStrings:Default" "Server=prod;Password=s3cret"
+dotnet user-secrets set "Jwt:SigningKey" "my-long-secret-key"
+dotnet user-secrets set "SendGrid:ApiKey" "SG.xxxxxxxx"
+
+# Then sync
+dss push</code></pre>
+
+    <h3>Sharing secrets across projects</h3>
+    <p><code>dotnet user-secrets</code> is project-specific — each collection is tied to a <code>UserSecretsId</code> in the <code>.csproj</code>. But you can reuse the same ID across multiple projects to share secrets:</p>
+    <pre><code>&lt;!-- In each .csproj that should share secrets --&gt;
+&lt;PropertyGroup&gt;
+  &lt;UserSecretsId&gt;my-shared-secrets&lt;/UserSecretsId&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+
+    <h3>"Global" secrets (no .csproj required)</h3>
+    <p>With <code>dss</code>, you can push/pull any arbitrary ID — you don't need a <code>.csproj</code> at all:</p>
+    <pre><code># Create a "global" secrets collection
+dss push global-dev-secrets
+dss pull global-dev-secrets</code></pre>
+    <p>The secrets land in <code>~/.microsoft/usersecrets/global-dev-secrets/secrets.json</code>. Any project with <code>&lt;UserSecretsId&gt;global-dev-secrets&lt;/UserSecretsId&gt;</code> will read them automatically.</p>
+
+    <h3>Where secrets are stored locally</h3>
+    <table class="docs-table">
+        <thead>
+            <tr><th>Platform</th><th>Path</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Windows</td><td><code>%APPDATA%\Microsoft\UserSecrets\&lt;UserSecretsId&gt;\secrets.json</code></td></tr>
+            <tr><td>Linux / macOS</td><td><code>~/.microsoft/usersecrets/&lt;UserSecretsId&gt;/secrets.json</code></td></tr>
+        </tbody>
+    </table>
+
+    <h2 id="how-it-works">How It Works</h2>
+    <pre><code>[Your Machine]                     [devsecretstash.com]                  [Another Machine]
+secrets.json  -->  encrypt  -->  encrypted blob (SQLite)  -->  decrypt  -->  secrets.json
+                   (AES-256-GCM)                                (AES-256-GCM)</code></pre>
+    <ul>
+        <li><strong>AES-256-GCM</strong> encrypts your secrets using a random master key</li>
+        <li><strong>Argon2id</strong> derives a key-encryption-key from your password to wrap the master key</li>
+        <li>The server only stores encrypted blobs — it cannot read your secrets</li>
+        <li>Password changes re-wrap the master key without re-encrypting all secrets</li>
+    </ul>
 
     <h2 id="commands">CLI Commands</h2>
     <table class="docs-table">
@@ -57,6 +119,7 @@ dss pull</code></pre>
     </table>
     <p><strong>Global options:</strong> <code>--verbose</code> / <code>-v</code> enables detailed HTTP request/response logging.</p>
     <p>If <code>[id]</code> is omitted, the CLI auto-detects <code>UserSecretsId</code> from a <code>.csproj</code> in the current directory.</p>
+    <p>The CLI defaults to <code>https://devsecretstash.com</code>. Use <code>dss config</code> to point at a self-hosted instance.</p>
 
     <h2 id="security">Security Model</h2>
     <p>DevSecretStash uses a two-layer encryption scheme. Your plaintext secrets never leave your machine.</p>
@@ -65,10 +128,10 @@ dss pull</code></pre>
     <pre><code>Your password
   |  Argon2id (64MB memory, 3 iterations)
   v
-Key-Encryption-Key (KEK) -- never sent to server
+Key-Encryption-Key (KEK) — never sent to server
   |  AES-256-GCM
   v
-Wraps your Master Encryption Key (MEK) -- server stores wrapped version only
+Wraps your Master Encryption Key (MEK) — server stores wrapped version only
   |
   v
 MEK encrypts all your secrets via AES-256-GCM</code></pre>
@@ -89,7 +152,7 @@ MEK encrypts all your secrets via AES-256-GCM</code></pre>
     </table>
 
     <h3>What a server compromise reveals</h3>
-    <p>An attacker with full database access gets: your email, a password hash (Argon2id), an encrypted master key, and encrypted secret blobs. They would need to brute-force your password through Argon2id to decrypt anything.</p>
+    <p>An attacker with full database access gets: your email, a password hash (Argon2id), an encrypted master key, and encrypted secret blobs. They would need to brute-force your password through Argon2id to decrypt anything. No plaintext secrets are ever on the server — not in memory, not in logs, not in the database.</p>
 
     <h2 id="api">API Reference</h2>
     <p>The full REST API is documented via Swagger at <a href="/swagger">/swagger</a>.</p>
@@ -99,13 +162,13 @@ MEK encrypts all your secrets via AES-256-GCM</code></pre>
             <tr><th>Endpoint</th><th>Auth</th><th>Description</th></tr>
         </thead>
         <tbody>
-            <tr><td><code>POST /api/auth/register</code></td><td>No</td><td>Create account</td></tr>
+            <tr><td><code>POST /api/auth/register</code></td><td>No</td><td>Create account + store wrapped master key</td></tr>
             <tr><td><code>POST /api/auth/login</code></td><td>No</td><td>Authenticate, get JWT + encrypted master key</td></tr>
-            <tr><td><code>POST /api/auth/refresh</code></td><td>No</td><td>Rotate refresh token</td></tr>
+            <tr><td><code>POST /api/auth/refresh</code></td><td>No</td><td>Rotate refresh token, get new JWT</td></tr>
             <tr><td><code>POST /api/auth/change-password</code></td><td>JWT</td><td>Update password + re-wrapped master key</td></tr>
             <tr><td><code>GET /api/secrets</code></td><td>JWT</td><td>List all collections</td></tr>
             <tr><td><code>GET /api/secrets/{id}</code></td><td>JWT</td><td>Get encrypted collection</td></tr>
-            <tr><td><code>PUT /api/secrets/{id}</code></td><td>JWT</td><td>Push encrypted collection</td></tr>
+            <tr><td><code>PUT /api/secrets/{id}</code></td><td>JWT</td><td>Push encrypted collection (optimistic concurrency via version)</td></tr>
             <tr><td><code>DELETE /api/secrets/{id}</code></td><td>JWT</td><td>Delete collection</td></tr>
         </tbody>
     </table>
@@ -120,10 +183,34 @@ docker run -d -p 8080:8080 \
   -e Jwt__Key="your-secret-key-minimum-32-characters!" \
   devsecretstash-api</code></pre>
 
+    <h3>Azure App Service</h3>
+    <pre><code># Create resource group and B1 Linux plan
+az group create --name devsecretstash-rg --location centralus
+az appservice plan create --name devsecretstash-plan \
+  --resource-group devsecretstash-rg --is-linux --sku B1
+
+# Create web app
+az webapp create --name devsecretstash \
+  --resource-group devsecretstash-rg \
+  --plan devsecretstash-plan --runtime "DOTNETCORE:9.0"
+
+# Configure
+az webapp config appsettings set --name devsecretstash \
+  --resource-group devsecretstash-rg --settings \
+    Jwt__Key="YOUR-SECRET-KEY-MIN-32-CHARS" \
+    ConnectionStrings__Default="Data Source=/home/site/data/devsecretstash.db" \
+    ASPNETCORE_URLS="http://+:8080"
+
+# Deploy
+dotnet publish src/DevSecretStash.Api -c Release -o ./publish
+cd publish && zip -r ../deploy.zip . && cd ..
+az webapp deploy --name devsecretstash \
+  --resource-group devsecretstash-rg --src-path deploy.zip --type zip</code></pre>
+
     <h3>Point CLI at your server</h3>
     <pre><code>dss config --server-url https://your-server.example.com</code></pre>
 
-    <h3>Configuration</h3>
+    <h3>Server configuration</h3>
     <table class="docs-table">
         <thead>
             <tr><th>Setting</th><th>Environment Variable</th><th>Default</th></tr>
