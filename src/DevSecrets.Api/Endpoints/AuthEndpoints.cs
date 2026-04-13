@@ -4,6 +4,7 @@ using DevSecrets.Api.Data;
 using DevSecrets.Api.Services;
 using DevSecrets.Core.Dtos;
 using DevSecrets.Core.Encryption;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevSecrets.Api.Endpoints;
@@ -17,7 +18,12 @@ public static class AuthEndpoints
         group.MapPost("/register", Register);
         group.MapPost("/login", Login);
         group.MapPost("/refresh", Refresh);
-        group.MapPost("/change-password", ChangePassword).RequireAuthorization();
+        group.MapPost("/change-password", ChangePassword)
+            .RequireAuthorization(policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+            });
 
         return group;
     }

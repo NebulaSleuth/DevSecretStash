@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using DevSecrets.Api.Data;
 using DevSecrets.Core.Dtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 namespace DevSecrets.Api.Endpoints;
@@ -11,7 +12,11 @@ public static class SecretsEndpoints
     {
         var group = app.MapGroup("/api/secrets")
             .WithTags("Secrets")
-            .RequireAuthorization();
+            .RequireAuthorization(policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+            });
 
         group.MapGet("/", ListCollections);
         group.MapGet("/{userSecretsId}", GetCollection);

@@ -1,0 +1,71 @@
+@page
+@model DevSecrets.Api.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Dashboard</h1>
+<p class="subtitle">Your synced secret collections</p>
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-value">@Model.Collections.Count</div>
+        <div class="stat-label">Collections</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.TotalVersions</div>
+        <div class="stat-label">Total Pushes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@(Model.Collections.Any() ? Model.Collections.Max(c => c.LastModified).ToString("MMM dd") : "--")</div>
+        <div class="stat-label">Last Sync</div>
+    </div>
+</div>
+
+@if (Model.Collections.Any())
+{
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table class="secrets-table">
+            <thead>
+                <tr>
+                    <th>UserSecretsId</th>
+                    <th>Version</th>
+                    <th>Last Modified</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var collection in Model.Collections.OrderByDescending(c => c.LastModified))
+                {
+                    <tr>
+                        <td><span class="secrets-id">@collection.UserSecretsId</span></td>
+                        <td><span class="version-badge">v@(collection.Version)</span></td>
+                        <td>@collection.LastModified.ToString("yyyy-MM-dd HH:mm:ss") UTC</td>
+                        <td style="text-align: right;">
+                            <form method="post" asp-page-handler="Delete" style="display: inline;">
+                                <input type="hidden" name="userSecretsId" value="@collection.UserSecretsId" />
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Delete collection @collection.UserSecretsId? This cannot be undone.')">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="card empty-state">
+        <p>No secret collections yet.</p>
+        <p>Push your first secrets with the CLI:</p>
+        <p><code>devsecrets push</code></p>
+    </div>
+}

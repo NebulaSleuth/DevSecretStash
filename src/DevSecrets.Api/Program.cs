@@ -3,6 +3,8 @@ using System.Threading.RateLimiting;
 using DevSecrets.Api.Data;
 using DevSecrets.Api.Endpoints;
 using DevSecrets.Api.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,12 +15,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=devsecrets.db"));
 
-// JWT Authentication
+// JWT + Cookie Authentication (dual scheme)
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "DevSecrets-Development-Key-Change-In-Production-Min32Chars!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "DevSecrets";
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = "DualAuth";
+        options.DefaultChallengeScheme = "DualAuth";
+    })
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
@@ -32,7 +38,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             NameClaimType = "sub"
         };
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/Login";
+        options.LogoutPath = "/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    })
+    .AddPolicyScheme("DualAuth", "JWT or Cookie", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+            if (authHeader?.StartsWith("Bearer ") == true)
+                return JwtBearerDefaults.AuthenticationScheme;
+            return CookieAuthenticationDefaults.AuthenticationScheme;
+        };
     });
+
 builder.Services.AddAuthorization();
 
 // Rate limiting
@@ -51,6 +74,8 @@ builder.Services.AddRateLimiter(options =>
 
 // Services
 builder.Services.AddSingleton<TokenService>();
+builder.Services.AddRazorPages();
+builder.Services.AddAntiforgery();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -74,10 +99,13 @@ else
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 app.UseRateLimiter();
 
+app.MapRazorPages();
 app.MapAuthEndpoints();
 app.MapSecretsEndpoints();
 

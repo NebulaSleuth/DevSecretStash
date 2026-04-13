@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DevSecrets</title>
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="brand" href="/">DevSecrets</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="nav-right">
+                    <span class="nav-user">@User.FindFirst("email")?.Value</span>
+                    <a href="/Logout" class="nav-link">Logout</a>
+                </div>
+            }
+        </div>
+    </nav>
+    <main class="container">
+        @RenderBody()
+    </main>
+    <footer class="container footer">
+        <p>DevSecrets &mdash; Secure .NET User Secrets Sync</p>
+    </footer>
+</body>
+</html>
