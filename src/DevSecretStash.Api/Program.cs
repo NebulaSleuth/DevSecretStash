@@ -16,8 +16,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=devsecretstash.db"));
 
 // JWT + Cookie Authentication (dual scheme)
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "DevSecretStash-Development-Key-Change-In-Production-Min32Chars!";
+const string DevOnlyKey = "DevSecretStash-Development-Key-Change-In-Production-Min32Chars!";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? DevOnlyKey;
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "DevSecretStash";
+
+if (jwtKey == DevOnlyKey && !builder.Environment.IsDevelopment())
+    throw new InvalidOperationException(
+        "FATAL: Jwt:Key is not configured. Set the Jwt__Key environment variable to a secure random string (minimum 32 characters). " +
+        "The default development key cannot be used in production.");
 
 builder.Services.AddAuthentication(options =>
     {
