@@ -208,7 +208,7 @@ az webapp deploy --name devsecretstash --resource-group devsecretstash-rg \
 
 ### Continuous Deployment (GitHub Actions)
 
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) deploys to the `devsecretstash` App Service each time the CI workflow passes on a push to `master`. You can also run it by hand from the Actions tab. One-time setup:
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) deploys to the `devsecretstash-es` App Service each time the CI workflow passes on a push to `master`. You can also run it by hand from the Actions tab. One-time setup:
 
 1. In the Azure portal, open the web app > **Configuration** > **General settings** and turn on **SCM Basic Auth Publishing Credentials**.
 2. On the **Overview** page, click **Download publish profile**.

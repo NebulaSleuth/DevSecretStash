@@ -4,7 +4,7 @@ name: Deploy
 # passes on master. Can also be run by hand from the Actions tab.
 #
 # Setup (once):
-#   1. In the Azure portal, open the "devsecretstash" Web App > Configuration >
+#   1. In the Azure portal, open the "devsecretstash-es" Web App > Configuration >
 #      General settings and turn on "SCM Basic Auth Publishing Credentials".
 #   2. Overview > "Download publish profile".
 #   3. In GitHub: Settings > Secrets and variables > Actions > New repository
@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AZURE_WEBAPP_NAME: devsecretstash
+  AZURE_WEBAPP_NAME: devsecretstash-es
 
 jobs:
   deploy:
