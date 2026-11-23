@@ -4,8 +4,9 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="container">
-    <h1 class="page-title">Dashboard</h1>
+<div class="container page">
+    <span class="kicker">Dashboard</span>
+    <h1 class="page-title">Your <em>stash.</em></h1>
     <p class="page-subtitle">Your synced secret collections</p>
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -30,7 +31,7 @@
 
     @if (Model.Collections.Any())
     {
-        <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="card table-card">
             <table class="secrets-table">
                 <thead>
                     <tr>

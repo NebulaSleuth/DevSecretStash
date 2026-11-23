@@ -4,107 +4,110 @@
     ViewData["Title"] = "Secure .NET Secrets Sync";
 }
 
-<section class="hero">
-    <div class="hero-badge">Free &amp; Open Source</div>
-    <h1>Stop copying <span class="accent">secrets.json</span> between machines</h1>
-    <p class="lead">DevSecretStash syncs your .NET user-secrets across every dev machine with end-to-end encryption. The server never sees your plaintext.</p>
-    <div class="hero-actions">
-        <a href="/Register" class="btn btn-primary btn-lg">Create Free Account</a>
-        <a href="/Docs" class="btn btn-secondary btn-lg">View Docs</a>
-    </div>
-
-    <div class="terminal">
-        <div class="terminal-bar">
-            <span class="terminal-dot"></span>
-            <span class="terminal-dot"></span>
-            <span class="terminal-dot"></span>
+<section class="p-hero">
+    <div class="wrap grid">
+        <div>
+            <p class="badge">Free &amp; open source</p>
+            <h1>Dev Secret <span class="hot">Stash</span></h1>
+            <p class="sub">Stop copying <strong>secrets.json</strong> between machines. Dev Secret Stash syncs your .NET user-secrets across every development machine with end-to-end encryption. The server never sees your plaintext.</p>
+            <div class="cta-row">
+                <a class="btn btn-lg" href="/Register">Create free account <span class="arrow">&rarr;</span></a>
+                <a class="btn btn-lg ghost" href="#features">See how it works</a>
+            </div>
         </div>
-        <div class="terminal-body">
-            <span class="prompt">$</span> <span class="cmd">dotnet tool install --global DevSecretStash</span><br/>
-            <span class="prompt">$</span> <span class="cmd">dss register</span><br/>
-            <span class="output">Email: dev&#64;example.com</span><br/>
-            <span class="output">Registered and logged in as dev&#64;example.com</span><br/><br/>
-            <span class="prompt">$</span> <span class="cmd">dss push</span><br/>
-            <span class="output">Pushed 5 keys for a1b2c3d4-... (version: 1)</span><br/><br/>
-            <span class="output"># On another machine:</span><br/>
-            <span class="prompt">$</span> <span class="cmd">dss login</span><br/>
-            <span class="prompt">$</span> <span class="cmd">dss pull</span><br/>
-            <span class="output">Pulled 5 keys for a1b2c3d4-... (version: 1)</span>
+        <div class="term" role="img" aria-label="Terminal session: installing the dss tool, pushing secrets on one machine and pulling them on another">
+            <div class="term-bar"><i></i><i></i><i></i><span>dss</span></div>
+<pre><span class="p">$</span> dotnet tool install --global DevSecretStash
+<span class="p">$</span> dss register
+<span class="ok">Registered and logged in</span>
+
+<span class="p">$</span> dss push
+<span class="ok">Pushed 5 keys</span> <span class="dim">(version: 1)</span>
+
+<span class="dim"># On another machine:</span>
+<span class="p">$</span> dss login
+<span class="p">$</span> dss pull
+<span class="ok">Pulled 5 keys</span> <span class="dim">(version: 1)</span><span class="cur"></span></pre>
         </div>
     </div>
 </section>
 
-<section class="features">
-    <h2>Built for .NET developers</h2>
-    <p class="section-subtitle">Everything you need to keep secrets in sync, nothing you don't.</p>
-    <div class="feature-grid">
-        <div class="feature-card">
-            <div class="feature-icon">&#x1f510;</div>
-            <h3>End-to-End Encrypted</h3>
-            <p>AES-256-GCM encryption with Argon2id key derivation. Secrets are encrypted on your machine before upload.</p>
+<div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+        <span>dss push</span><span>dss pull</span><span>AES-256-GCM</span><span>Argon2id</span><span>Zero knowledge</span><span>Self-hostable</span>
+        <span>dss push</span><span>dss pull</span><span>AES-256-GCM</span><span>Argon2id</span><span>Zero knowledge</span><span>Self-hostable</span>
+    </div>
+</div>
+
+<section class="section" id="features">
+    <div class="wrap">
+        <div class="sec-head reveal">
+            <div>
+                <span class="kicker">What it does</span>
+                <h2>Your secrets,<br /><em>on every machine.</em></h2>
+            </div>
+            <p>Built for .NET developers. Everything you need to keep secrets in sync, and nothing you don't.</p>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">&#x1f5a5;</div>
-            <h3>Cross-Platform</h3>
-            <p>Works on Windows, macOS, and Linux. Reads and writes the standard dotnet user-secrets locations.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">&#x26a1;</div>
-            <h3>Two Commands</h3>
-            <p><code>dss push</code> and <code>dss pull</code>. Auto-detects your UserSecretsId from the .csproj file.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">&#x1f91d;</div>
-            <h3>Works with dotnet user-secrets</h3>
-            <p>Same secrets.json format, same file locations. Your existing workflow doesn't change.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">&#x1f6e1;</div>
-            <h3>Zero-Knowledge Server</h3>
-            <p>Your master key never leaves your machine. Even if the server is compromised, your secrets stay safe.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">&#x1f4e6;</div>
-            <h3>Free Forever</h3>
-            <p>No subscription, no limits, no credit card. Open source and self-hostable.</p>
+        <div class="features">
+            <div class="feature reveal"><span class="ico">01</span><h3>End-to-end encrypted</h3><p>Secrets are encrypted on your machine with AES-256-GCM before they are uploaded.</p></div>
+            <div class="feature reveal"><span class="ico">02</span><h3>Zero-knowledge server</h3><p>Your master key never leaves your machine. Even a compromised server can't read your secrets.</p></div>
+            <div class="feature reveal"><span class="ico">03</span><h3>Two commands</h3><p><code>dss push</code> and <code>dss pull</code>. Your UserSecretsId is detected from the .csproj.</p></div>
+            <div class="feature reveal"><span class="ico">04</span><h3>Works with dotnet user-secrets</h3><p>Same secrets.json format and the same file locations, so your existing workflow doesn't change.</p></div>
+            <div class="feature reveal"><span class="ico">05</span><h3>Manage secrets directly</h3><p>The <code>dss secrets</code> commands create and edit collections without a project file.</p></div>
+            <div class="feature reveal"><span class="ico">06</span><h3>Cross-platform</h3><p>Windows, macOS and Linux, reading and writing the standard user-secrets locations.</p></div>
         </div>
     </div>
 </section>
 
-<section class="how-it-works">
-    <h2>Get started in 60 seconds</h2>
-    <div class="step">
-        <div class="step-number">1</div>
-        <div>
-            <h3>Install the CLI</h3>
-            <p><code>dotnet tool install --global DevSecretStash</code></p>
+<section class="section alt">
+    <div class="wrap split">
+        <div class="reveal">
+            <span class="kicker">Security model</span>
+            <h2>The server only sees <em>ciphertext.</em></h2>
+            <p class="body">A random master key encrypts your secrets. A key derived from your password with Argon2id wraps that master key, so changing your password never means re-encrypting everything.</p>
+            <div class="shelf">
+                <span class="ok">AES-256-GCM</span><span class="ok">Argon2id</span><span class="ok">HTTPS + HSTS</span><span class="ok">JWT + refresh tokens</span><span class="ok">Rate limiting</span>
+            </div>
         </div>
-    </div>
-    <div class="step">
-        <div class="step-number">2</div>
-        <div>
-            <h3>Create your account</h3>
-            <p>Run <code>dss register</code> or <a href="/Register">sign up here</a>. Encryption keys are generated locally.</p>
-        </div>
-    </div>
-    <div class="step">
-        <div class="step-number">3</div>
-        <div>
-            <h3>Push your secrets</h3>
-            <p>From any .NET project: <code>dss push</code>. Secrets are encrypted and uploaded.</p>
-        </div>
-    </div>
-    <div class="step">
-        <div class="step-number">4</div>
-        <div>
-            <h3>Pull on another machine</h3>
-            <p><code>dss login</code> then <code>dss pull</code>. Decrypted locally, written to standard location.</p>
+        <div class="reveal">
+            <span class="kicker">Free, open and yours</span>
+            <h2>Hosted here, or <em>self-host.</em></h2>
+            <p class="body">Use the free hosted service at devsecretstash.com, or run your own instance on Azure App Service or Docker. The CLI points at whichever server you choose.</p>
+            <div class="shelf">
+                <span>.NET</span><span>dotnet global tool</span><span>ASP.NET Core</span><span>SQLite</span><span>Docker</span><span>MIT licence</span>
+            </div>
+            <div class="cta-row" style="margin-top:30px">
+                <a class="btn ghost" href="/Docs#deploy">Self-hosting guide <span class="arrow">&rarr;</span></a>
+            </div>
         </div>
     </div>
 </section>
 
-<section class="cta-section">
-    <h2>Ready to stop sharing secrets over Slack?</h2>
-    <p>Join for free and sync your first secrets in under a minute.</p>
-    <a href="/Register" class="btn btn-primary btn-lg">Create Free Account</a>
+<section class="section">
+    <div class="wrap split">
+        <div class="reveal">
+            <span class="kicker">Get started</span>
+            <h2>Up and running in <em>60 seconds.</em></h2>
+            <p class="body">Install the global tool, create an account, and push. Encryption keys are generated locally, and your password never leaves your machine in plaintext.</p>
+            <a class="btn ghost" href="/Docs">Read the docs <span class="arrow">&rarr;</span></a>
+        </div>
+        <ol class="steps reveal">
+            <li><span class="n">01</span><div><h3>Install the CLI</h3><p><code>dotnet tool install --global DevSecretStash</code></p></div></li>
+            <li><span class="n">02</span><div><h3>Create your account</h3><p>Run <code>dss register</code> or <a href="/Register">sign up here</a>.</p></div></li>
+            <li><span class="n">03</span><div><h3>Push your secrets</h3><p>From any .NET project, run <code>dss push</code>. Secrets are encrypted and uploaded.</p></div></li>
+            <li><span class="n">04</span><div><h3>Pull on another machine</h3><p><code>dss login</code>, then <code>dss pull</code>. Decrypted locally, written to the standard location.</p></div></li>
+        </ol>
+    </div>
+</section>
+
+<section class="section cta-big">
+    <div class="wrap reveal">
+        <span class="kicker">Free forever</span>
+        <h2>Stop pasting secrets <span>into Slack.</span></h2>
+        <p>No subscription, no limits, no credit card. Sync your first secrets in under a minute.</p>
+        <div class="cta-row">
+            <a class="btn btn-lg" href="/Register">Create free account <span class="arrow">&rarr;</span></a>
+            <a class="btn btn-lg ghost" href="/Docs#install">Install the CLI</a>
+        </div>
+    </div>
 </section>

@@ -1,64 +1,76 @@
+@{
+    var path = Context.Request.Path.Value?.TrimEnd('/') ?? "";
+    string? Current(string page) => path.Equals(page, StringComparison.OrdinalIgnoreCase) ? "page" : null;
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Dev Secret Stash</title>
-    <link rel="stylesheet" href="/css/site.css" />
+    <meta name="description" content="Dev Secret Stash syncs your .NET user-secrets across every development machine with end-to-end encryption. Free, open source and self-hostable." />
+    <meta name="theme-color" content="#0d1117" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container nav-container">
-            <a class="brand" href="/">
-                <span class="brand-icon">&#x1f512;</span> Dev Secret Stash
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="backdrop" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div></div>
+
+    <header class="navbar">
+        <div class="wrap nav-container">
+            <a class="brand" href="/" aria-label="Dev Secret Stash home">
+                <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3 57 17.5v29L32 61 7 46.5v-29z" fill="#3ddc97"/><path d="M32 9.5 51.4 20.7v22.6L32 54.5 12.6 43.3V20.7z" fill="none" stroke="#06140d" stroke-width="2.2"/><circle cx="32" cy="27.5" r="6.5" fill="#06140d"/><path d="M28.6 31h6.8l2.2 13H26.4z" fill="#06140d"/></svg>
+                <span>Dev Secret Stash</span>
             </a>
-            <div class="nav-right">
+            <button class="mobile-toggle" aria-expanded="false" aria-controls="nav-right">Menu</button>
+            <div class="nav-right" id="nav-right">
+                <nav class="nav-links" aria-label="Primary">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/Dashboard" class="nav-link" aria-current="@Current("/Dashboard")">Dashboard</a>
+                        <a href="/Docs" class="nav-link" aria-current="@Current("/Docs")">Docs</a>
+                        <a href="/Logout" class="nav-link">Logout</a>
+                    }
+                    else
+                    {
+                        <a href="/Docs" class="nav-link" aria-current="@Current("/Docs")">Docs</a>
+                        <a href="/Login" class="nav-link" aria-current="@Current("/Login")">Login</a>
+                    }
+                </nav>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a href="/Dashboard" class="nav-link">Dashboard</a>
                     <span class="nav-user">@User.FindFirst("email")?.Value</span>
-                    <a href="/Logout" class="nav-link">Logout</a>
                 }
                 else
                 {
-                    <a href="/Docs" class="nav-link">Docs</a>
-                    <a href="/Login" class="nav-link">Login</a>
-                    <a href="/Register" class="btn btn-primary btn-sm">Sign Up Free</a>
+                    <a href="/Register" class="btn btn-sm">Sign up free</a>
                 }
             </div>
-            <button class="mobile-toggle" onclick="document.querySelector('.nav-right').classList.toggle('open')">
-                &#9776;
-            </button>
         </div>
-    </nav>
-    <main>
+    </header>
+
+    <main id="main">
         @RenderBody()
     </main>
+
     <footer class="site-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <div class="footer-brand">Dev Secret Stash</div>
-                    <p class="footer-desc">Securely sync your .NET user-secrets across every machine you develop on.</p>
-                    <p class="footer-desc" style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.6;">by Extrastrength Software LLC</p>
-                </div>
-                <div>
-                    <div class="footer-heading">Product</div>
-                    <a href="/Docs">Documentation</a>
-                    <a href="/swagger">API Reference</a>
-                    <a href="/Register">Create Account</a>
-                </div>
-                <div>
-                    <div class="footer-heading">Resources</div>
-                    <a href="/Docs#install">Install CLI</a>
-                    <a href="/Docs#security">Security Model</a>
-                    <a href="/Docs#deploy">Self-Host</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Extrastrength Software LLC. Free and open source.</p>
-            </div>
+        <div class="wrap">
+            <span>&copy; @DateTime.UtcNow.Year <a href="https://extrastrength.com" target="_blank" rel="noopener">Extrastrength Software LLC</a> &middot; Free &amp; open source</span>
+            <nav aria-label="Footer">
+                <a href="/Docs">Docs</a>
+                <a href="/Docs#install">Install CLI</a>
+                <a href="/Docs#security">Security</a>
+                <a href="/Docs#deploy">Self-host</a>
+                <a href="/swagger">API</a>
+                <a href="/Register">Create account</a>
+            </nav>
         </div>
     </footer>
+
+    <script src="/js/site.js" asp-append-version="true"></script>
 </body>
 </html>
