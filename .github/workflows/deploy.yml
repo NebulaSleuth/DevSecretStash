@@ -1,0 +1,79 @@
+name: Deploy
+
+# Deploys the API + website to Azure App Service (devsecretstash.com) after CI
+# passes on master. Can also be run by hand from the Actions tab.
+#
+# Setup (once):
+#   1. In the Azure portal, open the "devsecretstash" Web App > Configuration >
+#      General settings and turn on "SCM Basic Auth Publishing Credentials".
+#   2. Overview > "Download publish profile".
+#   3. In GitHub: Settings > Secrets and variables > Actions > New repository
+#      secret named AZURE_WEBAPP_PUBLISH_PROFILE, value = the file's contents.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AZURE_WEBAPP_NAME: devsecretstash
+
+jobs:
+  deploy:
+    # Only deploy commits that passed CI from a push (not pull requests).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://devsecretstash.com
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Deploy exactly the commit CI tested.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Check publish profile secret
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        run: |
+          if [ -z "$PUBLISH_PROFILE" ]; then
+            echo "::error::AZURE_WEBAPP_PUBLISH_PROFILE secret is not set. See the setup notes at the top of deploy.yml."
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish
+        run: dotnet publish src/DevSecretStash.Api -c Release -o ./publish
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
+
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://devsecretstash.com/)
+            echo "Attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::devsecretstash.com did not return 200 after deploy"
+          exit 1

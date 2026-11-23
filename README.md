@@ -206,6 +206,16 @@ az webapp deploy --name devsecretstash --resource-group devsecretstash-rg \
   --src-path deploy.zip --type zip
 ```
 
+### Continuous Deployment (GitHub Actions)
+
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) deploys to the `devsecretstash` App Service each time the CI workflow passes on a push to `master`. You can also run it by hand from the Actions tab. One-time setup:
+
+1. In the Azure portal, open the web app > **Configuration** > **General settings** and turn on **SCM Basic Auth Publishing Credentials**.
+2. On the **Overview** page, click **Download publish profile**.
+3. In GitHub, go to **Settings** > **Secrets and variables** > **Actions** and add a repository secret named `AZURE_WEBAPP_PUBLISH_PROFILE` whose value is the contents of that file.
+
+App settings such as `Jwt__Key` and the connection string stay in Azure. The workflow only uploads the published app, and the SQLite database under `/home/site/data` is not touched.
+
 ### Docker Deployment (Alternative)
 
 ```bash
